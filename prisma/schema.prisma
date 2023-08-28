@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String
+  email        String        @unique
+  password     String?
+  photo        String?
+  photoName    String?
+  role         Role          @default(USER)
+  refreshToken String?
+  confirmed    Boolean?      @default(false)
+  singer       Singer?
+  singerAlbums SingerAlbum[]
+  songs        Song[]
+  playlists    Playlist[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Singer {
+  id           Int           @id @default(autoincrement())
+  name         String
+  info         String
+  type         SingerType
+  photoName    String?
+  singerAlbums SingerAlbum[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       Int           @unique
+}
+
+model SingerAlbum {
+  id        Int      @id @default(autoincrement())
+  name      String
+  photoName String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Singer    Singer?  @relation(fields: [singerId], references: [id], onDelete: Cascade)
+  singerId  Int?
+  songs     Song[]
+  User      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int?
+}
+
+model Song {
+  id            Int                @id @default(autoincrement())
+  name          String
+  description   String
+  artist        String
+  type          SongType
+  language      String
+  rate          Int
+  photoName     String?
+  playlists     SongsOnPlaylists[]
+  SingerAlbum   SingerAlbum?       @relation(fields: [singerAlbumId], references: [id], onDelete: Cascade)
+  singerAlbumId Int?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  User          User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int?
+}
+
+model Playlist {
+  id        Int                @id @default(autoincrement())
+  name      String
+  songs     SongsOnPlaylists[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  User      User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int?
+}
+
+model SongsOnPlaylists {
+  Song       Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId     Int
+  Playlist   Playlist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  playlistId Int
+
+  @@id([songId, playlistId])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum SingerType {
+  SINGLE
+  BAND
+}
+
+enum SongType {
+  CLASSICAL
+  POP
+  ROCK
+  METAL
+  COUNTRY
+  HIP_HOP
+  BALLADS
+  DANCE
+  LOVE
+  GOSPEL
+}
+
