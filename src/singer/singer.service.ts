@@ -48,7 +48,7 @@ export class SingerService {
         createdAt: true,
         updatedAt: true,
       },
-      skip: page ?? 0,
+      skip: page * size ?? 0,
       take: size ?? 0,
     });
   }
